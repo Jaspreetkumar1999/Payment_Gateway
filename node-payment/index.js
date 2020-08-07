@@ -77,6 +77,16 @@ app.get("/pay", (req, res) => {
       },
     ],
   };
+  paypal.payment.execute(paymentId, execute_payment_json, function(error, payment){
+      if(error){
+          console.log(error.response);
+          throw error;
+      }
+      else{
+      console.log("Get payment Response")
+      console.log(JSON.stringify(payment))
+      }
+  })
 });
 
 app.listen(3000, () => console.log("Server Started"));
