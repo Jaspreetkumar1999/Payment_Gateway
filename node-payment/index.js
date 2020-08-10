@@ -5,9 +5,9 @@ var paypal = require("paypal-rest-sdk");
 paypal.configure({
   mode: "sandbox", //sandbox or live
   client_id:
-    "AdltWRgJkSFy42sh68LCb2T5JVV-w8Tjs840V6LvDoeJffulW1F3moYqrSGG9efsv7kbwqXlOHMobtvh",
+    "AQwhlsk0aS1dGJEGITbyYR8gFw-xvO_PkS6AxbTWnFH8Oxsn0I_IGQoSFZ_vJBLsfIF9sjHNFber50lV",
   client_secret:
-    "EN81aeLA5rHlaHJQQH5NK5umG9sWj-_kcZE9jrZ8ItPaE9DnobvkjAsNJegkRXBC7EWmtVwiRKCYjrb8",
+    "EGoBh9M0lF_89KU8MW58BXrkKolI67OzyIA0FVdhJPH7P3XM1nWFP-ETMsjtzCOek0Fy59JDFeuFNKpZ",
 });
 
 const app = express();
@@ -17,21 +17,21 @@ app.get("/", (req, res) => res.render("index"));
 
 app.post("/pay", (req, res) => {
   console.log("payment is going on");
-  var create_payment_json = {
+  const create_payment_json = {
     intent: "sale",
     payer: {
       payment_method: "paypal",
     },
     redirect_urls: {
-      return_url: "http://localhoat:3000/pay",
-      cancel_url: "http://cancel.url",
+      return_url: "http://localhost:3000/success",
+      cancel_url: "http://localhost:3000/cancel",
     },
     transactions: [
       {
         item_list: {
           items: [
             {
-              name: "item",
+              name: "Oakmont Hoa fee",
               sku: "item",
               price: "1.00",
               currency: "USD",
@@ -52,22 +52,27 @@ app.post("/pay", (req, res) => {
   paypal.payment.create(create_payment_json, function (error, payment) {
     if (error) {
       console.log("an error occured");
-      throw error;
-    } else {
+      throw error; }
+     else {
       for (let i = 0; i < payment.links.length; i++) {
         if (payment.links[i].rel === "approval_url") {
           res.redirect(payment.links[i].href);
         }
       }
     }
+    // else{
+    //   console.log("Create Payment Response")
+    //   console.log(payment)
+    //   res.send('test');
+    // }
   });
 });
 
-app.get("/pay", (req, res) => {
+app.get("/success", (req, res) => {
   const payerId = req.query.PayerID;
   const paymentId = req.query.paymentId;
   var execute_payment_json = {
-    payer_id: "Appended to redirected url",
+    payer_id: payerId,
     transactions: [
       {
         amount: {
@@ -85,8 +90,10 @@ app.get("/pay", (req, res) => {
       else{
       console.log("Get payment Response")
       console.log(JSON.stringify(payment))
+      res.send('Success')
       }
   })
 });
+app.get('/cancel', (req,res)=> res.send('Cancelled'));
 
 app.listen(3000, () => console.log("Server Started"));
